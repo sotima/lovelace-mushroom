@@ -1,6 +1,6 @@
 {
     "name": "Private Mushroom",
-    "filename": "mushroom.js",
+    "filename": "mushroom.ts",
     "homeassistant": "2022.3",
     "render_readme": true
 }
