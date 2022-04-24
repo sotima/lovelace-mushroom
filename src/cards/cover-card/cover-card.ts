@@ -1,6 +1,6 @@
 import {
     ActionHandlerEvent,
-    computeStateDisplay,
+    computeRTL,
     handleAction,
     hasAction,
     HomeAssistant,
@@ -10,6 +10,9 @@ import {
 import { HassEntity } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { computeStateDisplay } from "../../ha/common/entity/compute-state-display";
+import { CoverEntity } from "../../ha/data/cover";
+import { isActive, isAvailable } from "../../ha/data/entity";
 import "../../shared/badge-icon";
 import "../../shared/button";
 import "../../shared/card";
@@ -19,7 +22,6 @@ import "../../shared/state-item";
 import { cardStyle } from "../../utils/card-styles";
 import { registerCustomCard } from "../../utils/custom-cards";
 import { actionHandler } from "../../utils/directives/action-handler-directive";
-import { isActive } from "../../utils/entity";
 import { stateIcon } from "../../utils/icons/state-icon";
 import { getLayoutFromConfig, Layout } from "../../utils/layout";
 import { COVER_CARD_EDITOR_NAME, COVER_CARD_NAME, COVER_ENTITY_DOMAINS } from "./const";
@@ -123,7 +125,7 @@ export class CoverCard extends LitElement implements LovelaceCard {
         if (!this._config || !this.hass || !this._config.entity) return;
 
         const entity_id = this._config.entity;
-        const entity = this.hass.states[entity_id];
+        const entity = this.hass.states[entity_id] as CoverEntity;
 
         if (!entity) return;
         this.position = getPosition(entity);
@@ -159,9 +161,12 @@ export class CoverCard extends LitElement implements LovelaceCard {
             stateValue += ` - ${this.position}%`;
         }
 
+        const rtl = computeRTL(this.hass);
+
         return html`
-            <mushroom-card .layout=${layout}>
+            <mushroom-card .layout=${layout} ?rtl=${rtl}>
                 <mushroom-state-item
+                    ?rtl=${rtl}
                     .layout=${layout}
                     @action=${this._handleAction}
                     .actionHandler=${actionHandler({
@@ -174,7 +179,7 @@ export class CoverCard extends LitElement implements LovelaceCard {
                         .disabled=${!isActive(entity)}
                         .icon=${icon}
                     ></mushroom-shape-icon>
-                    ${entity.state === "unavailable"
+                    ${!isAvailable(entity)
                         ? html`
                               <mushroom-badge-icon
                                   class="unavailable"
@@ -191,7 +196,7 @@ export class CoverCard extends LitElement implements LovelaceCard {
                 </mushroom-state-item>
                 ${this._controls.length > 0
                     ? html`
-                          <div class="actions">
+                          <div class="actions" ?rtl=${rtl}>
                               ${this.renderActiveControl(entity, layout)}
                               ${this.renderNextControlButton()}
                           </div>

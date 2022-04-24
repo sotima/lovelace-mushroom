@@ -1,6 +1,6 @@
 import {
     ActionHandlerEvent,
-    computeStateDisplay,
+    computeRTL,
     handleAction,
     hasAction,
     HomeAssistant,
@@ -11,6 +11,9 @@ import { HassEntity } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { computeStateDisplay } from "../../ha/common/entity/compute-state-display";
+import { isActive, isAvailable } from "../../ha/data/entity";
+import { LightEntity } from "../../ha/data/light";
 import "../../shared/badge-icon";
 import "../../shared/button";
 import "../../shared/card";
@@ -20,7 +23,6 @@ import "../../shared/state-item";
 import { cardStyle } from "../../utils/card-styles";
 import { registerCustomCard } from "../../utils/custom-cards";
 import { actionHandler } from "../../utils/directives/action-handler-directive";
-import { isActive } from "../../utils/entity";
 import { stateIcon } from "../../utils/icons/state-icon";
 import { getLayoutFromConfig } from "../../utils/layout";
 import { LIGHT_CARD_EDITOR_NAME, LIGHT_CARD_NAME, LIGHT_ENTITY_DOMAINS } from "./const";
@@ -31,8 +33,8 @@ import { LightCardConfig } from "./light-card-config";
 import {
     getBrightness,
     getRGBColor,
-    isLight,
-    isSuperLight,
+    isColorLight,
+    isColorSuperLight,
     supportsBrightnessControl,
     supportsColorControl,
     supportsColorTempControl,
@@ -118,7 +120,7 @@ export class LightCard extends LitElement implements LovelaceCard {
         if (!this._config || !this.hass || !this._config.entity) return;
 
         const entity_id = this._config.entity;
-        const entity = this.hass.states[entity_id];
+        const entity = this.hass.states[entity_id] as LightEntity;
 
         if (!entity) return;
         this.brightness = getBrightness(entity);
@@ -134,7 +136,7 @@ export class LightCard extends LitElement implements LovelaceCard {
         if (!this._config || !this.hass || !this._config.entity) return;
 
         const entity_id = this._config.entity;
-        const entity = this.hass.states[entity_id];
+        const entity = this.hass.states[entity_id] as LightEntity;
 
         if (!entity) return;
 
@@ -165,7 +167,7 @@ export class LightCard extends LitElement implements LovelaceCard {
         }
 
         const entity_id = this._config.entity;
-        const entity = this.hass.states[entity_id];
+        const entity = this.hass.states[entity_id] as LightEntity;
 
         const name = this._config.name || entity.attributes.friendly_name || "";
         const icon = this._config.icon || stateIcon(entity);
@@ -185,17 +187,20 @@ export class LightCard extends LitElement implements LovelaceCard {
             const color = lightRgbColor.join(",");
             iconStyle["--icon-color"] = `rgb(${color})`;
             iconStyle["--shape-color"] = `rgba(${color}, 0.25)`;
-            if (isLight(lightRgbColor) && !(this.hass.themes as any).darkMode) {
+            if (isColorLight(lightRgbColor) && !(this.hass.themes as any).darkMode) {
                 iconStyle["--shape-outline-color"] = `rgba(var(--rgb-primary-text-color), 0.05)`;
-                if (isSuperLight(lightRgbColor)) {
+                if (isColorSuperLight(lightRgbColor)) {
                     iconStyle["--icon-color"] = `rgba(var(--rgb-primary-text-color), 0.2)`;
                 }
             }
         }
 
+        const rtl = computeRTL(this.hass);
+
         return html`
-            <mushroom-card .layout=${layout}>
+            <mushroom-card .layout=${layout} ?rtl=${rtl}>
                 <mushroom-state-item
+                    ?rtl=${rtl}
                     .layout=${layout}
                     @action=${this._handleAction}
                     .actionHandler=${actionHandler({
@@ -209,7 +214,7 @@ export class LightCard extends LitElement implements LovelaceCard {
                         .icon=${icon}
                         style=${styleMap(iconStyle)}
                     ></mushroom-shape-icon>
-                    ${entity.state === "unavailable"
+                    ${!isAvailable(entity)
                         ? html`
                               <mushroom-badge-icon
                                   class="unavailable"
@@ -226,7 +231,7 @@ export class LightCard extends LitElement implements LovelaceCard {
                 </mushroom-state-item>
                 ${this._controls.length > 0
                     ? html`
-                          <div class="actions">
+                          <div class="actions" ?rtl=${rtl}>
                               ${this.renderActiveControl(entity)} ${this.renderOtherControls()}
                           </div>
                       `
@@ -250,7 +255,7 @@ export class LightCard extends LitElement implements LovelaceCard {
         `;
     }
 
-    private renderActiveControl(entity: HassEntity): TemplateResult | null {
+    private renderActiveControl(entity: LightEntity): TemplateResult | null {
         switch (this._activeControl) {
             case "brightness_control":
                 const lightRgbColor = getRGBColor(entity);
@@ -259,7 +264,7 @@ export class LightCard extends LitElement implements LovelaceCard {
                     const color = lightRgbColor.join(",");
                     sliderStyle["--slider-color"] = `rgb(${color})`;
                     sliderStyle["--slider-bg-color"] = `rgba(${color}, 0.2)`;
-                    if (isLight(lightRgbColor) && !(this.hass.themes as any).darkMode) {
+                    if (isColorLight(lightRgbColor) && !(this.hass.themes as any).darkMode) {
                         sliderStyle[
                             "--slider-bg-color"
                         ] = `rgba(var(--rgb-primary-text-color), 0.05)`;

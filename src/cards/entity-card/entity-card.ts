@@ -1,6 +1,6 @@
 import {
     ActionHandlerEvent,
-    computeStateDisplay,
+    computeRTL,
     handleAction,
     hasAction,
     HomeAssistant,
@@ -10,6 +10,8 @@ import {
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { computeStateDisplay } from "../../ha/common/entity/compute-state-display";
+import { isActive, isAvailable } from "../../ha/data/entity";
 import "../../shared/badge-icon";
 import "../../shared/card";
 import "../../shared/shape-icon";
@@ -19,7 +21,6 @@ import { cardStyle } from "../../utils/card-styles";
 import { computeRgbColor } from "../../utils/colors";
 import { registerCustomCard } from "../../utils/custom-cards";
 import { actionHandler } from "../../utils/directives/action-handler-directive";
-import { isActive, isAvailable } from "../../utils/entity";
 import { stateIcon } from "../../utils/icons/state-icon";
 import { getInfo } from "../../utils/info";
 import { getLayoutFromConfig } from "../../utils/layout";
@@ -106,9 +107,12 @@ export class EntityCard extends LitElement implements LovelaceCard {
 
         const iconColor = this._config.icon_color;
 
+        const rtl = computeRTL(this.hass);
+
         return html`
-            <mushroom-card .layout=${layout}>
+            <mushroom-card .layout=${layout} ?rtl=${rtl}>
                 <mushroom-state-item
+                    ?rtl=${rtl}
                     .layout=${layout}
                     @action=${this._handleAction}
                     .actionHandler=${actionHandler({

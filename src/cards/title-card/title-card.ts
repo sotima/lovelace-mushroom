@@ -1,5 +1,5 @@
 import { HomeAssistant, LovelaceCard, LovelaceCardEditor } from "custom-card-helpers";
-import { UnsubscribeFunc } from "home-assistant-js-websocket";
+import { Connection, UnsubscribeFunc } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "../../shared/shape-icon";
@@ -82,9 +82,13 @@ export class TitleCard extends LitElement implements LovelaceCard {
 
         const title = this.getValue("title");
         const subtitle = this.getValue("subtitle");
+        let alignment = "";
+        if (this._config.alignment) {
+            alignment = `align-${this._config.alignment}`;
+        }
 
         return html`
-            <div class="header">
+            <div class="header ${alignment}">
                 ${title ? html`<h1 class="title">${title}</h1>` : null}
                 ${subtitle ? html`<h2 class="subtitle">${subtitle}</h2>` : null}
             </div>
@@ -118,7 +122,7 @@ export class TitleCard extends LitElement implements LovelaceCard {
 
         try {
             const sub = subscribeRenderTemplate(
-                this.hass.connection,
+                this.hass.connection as any as Connection,
                 (result) => {
                     this._templateResults = {
                         ...this._templateResults,
@@ -204,6 +208,18 @@ export class TitleCard extends LitElement implements LovelaceCard {
                     font-size: var(--subtitle-font-size);
                     font-weight: var(--subtitle-font-weight);
                     line-height: var(--subtitle-line-height);
+                }
+                .align-start {
+                    text-align: start;
+                }
+                .align-end {
+                    text-align: end;
+                }
+                .align-center {
+                    text-align: center;
+                }
+                .align-justify {
+                    text-align: justify;
                 }
             `,
         ];

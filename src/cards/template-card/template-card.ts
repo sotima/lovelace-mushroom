@@ -1,12 +1,13 @@
 import {
     ActionHandlerEvent,
+    computeRTL,
     handleAction,
     hasAction,
     HomeAssistant,
     LovelaceCard,
     LovelaceCardEditor,
 } from "custom-card-helpers";
-import { UnsubscribeFunc } from "home-assistant-js-websocket";
+import { Connection, UnsubscribeFunc } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
@@ -125,9 +126,12 @@ export class TemplateCard extends LitElement implements LovelaceCard {
             iconStyle["--shape-color"] = `rgba(${iconRgbColor}, 0.2)`;
         }
 
+        const rtl = computeRTL(this.hass);
+
         return html`
-            <mushroom-card .layout=${layout}>
+            <mushroom-card .layout=${layout} ?rtl=${rtl}>
                 <mushroom-state-item
+                    ?rtl=${rtl}
                     .layout=${layout}
                     @action=${this._handleAction}
                     .actionHandler=${actionHandler({
@@ -192,7 +196,7 @@ export class TemplateCard extends LitElement implements LovelaceCard {
 
         try {
             const sub = subscribeRenderTemplate(
-                this.hass.connection,
+                this.hass.connection as any as Connection,
                 (result) => {
                     this._templateResults = {
                         ...this._templateResults,

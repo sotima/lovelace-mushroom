@@ -1,5 +1,6 @@
 import {
     ActionHandlerEvent,
+    computeRTL,
     computeStateDisplay,
     handleAction,
     hasAction,
@@ -10,6 +11,7 @@ import {
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { isActive, isAvailable } from "../../ha/data/entity";
 import "../../shared/badge-icon";
 import "../../shared/card";
 import "../../shared/shape-avatar";
@@ -17,7 +19,6 @@ import "../../shared/shape-icon";
 import { cardStyle } from "../../utils/card-styles";
 import { registerCustomCard } from "../../utils/custom-cards";
 import { actionHandler } from "../../utils/directives/action-handler-directive";
-import { isActive } from "../../utils/entity";
 import { stateIcon as stateIconHelper } from "../../utils/icons/state-icon";
 import { getLayoutFromConfig } from "../../utils/layout";
 import { PERSON_CARD_EDITOR_NAME, PERSON_CARD_NAME, PERSON_ENTITY_DOMAINS } from "./const";
@@ -100,12 +101,13 @@ export class PersonCard extends LitElement implements LovelaceCard {
 
         const stateDisplay = computeStateDisplay(this.hass.localize, entity, this.hass.locale);
 
-        const isAvailable = entity.state !== "unavailable";
+        const rtl = computeRTL(this.hass);
 
         return html`
-            <mushroom-card .layout=${layout}>
+            <mushroom-card .layout=${layout} ?rtl=${rtl}>
                 <div class="container">
                     <mushroom-state-item
+                        ?rtl=${rtl}
                         .layout=${layout}
                         @action=${this._handleAction}
                         .actionHandler=${actionHandler({
@@ -113,27 +115,23 @@ export class PersonCard extends LitElement implements LovelaceCard {
                             hasDoubleClick: hasAction(this._config.double_tap_action),
                         })}
                     >
-                        ${
-                            picture
-                                ? html`
-                                      <mushroom-shape-avatar
-                                          slot="icon"
-                                          .picture_url=${picture}
-                                      ></mushroom-shape-avatar>
-                                  `
-                                : html`
-                                      <mushroom-shape-icon
-                                          slot="icon"
-                                          .icon=${icon}
-                                          .disabled=${!isActive(entity)}
-                                      ></mushroom-shape-icon>
-                                  `
-                        }
-                        ${
-                            isAvailable
-                                ? this.renderStateBadge(stateIcon, stateColor)
-                                : this.renderUnvailableBadge()
-                        }
+                        ${picture
+                            ? html`
+                                  <mushroom-shape-avatar
+                                      slot="icon"
+                                      .picture_url=${picture}
+                                  ></mushroom-shape-avatar>
+                              `
+                            : html`
+                                  <mushroom-shape-icon
+                                      slot="icon"
+                                      .icon=${icon}
+                                      .disabled=${!isActive(entity)}
+                                  ></mushroom-shape-icon>
+                              `}
+                        ${isAvailable(entity)
+                            ? this.renderStateBadge(stateIcon, stateColor)
+                            : this.renderUnavailableBadge()}
                         <mushroom-state-info
                             slot="info"
                             .primary=${!hideName ? name : undefined}
@@ -141,7 +139,7 @@ export class PersonCard extends LitElement implements LovelaceCard {
                         ></mushroom-state-info>
                     </mushroom-state-item>
                 </div>
-            </ha-card>
+            </mushroom-card>
         `;
     }
 
@@ -157,7 +155,7 @@ export class PersonCard extends LitElement implements LovelaceCard {
         `;
     }
 
-    renderUnvailableBadge() {
+    renderUnavailableBadge() {
         return html`
             <mushroom-badge-icon
                 class="unavailable"

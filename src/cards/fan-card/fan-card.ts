@@ -1,6 +1,6 @@
 import {
     ActionHandlerEvent,
-    computeStateDisplay,
+    computeRTL,
     handleAction,
     hasAction,
     HomeAssistant,
@@ -11,6 +11,8 @@ import { css, CSSResultGroup, html, LitElement, PropertyValues, TemplateResult }
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { computeStateDisplay } from "../../ha/common/entity/compute-state-display";
+import { isActive, isAvailable } from "../../ha/data/entity";
 import "../../shared/badge-icon";
 import "../../shared/button";
 import "../../shared/card";
@@ -20,7 +22,6 @@ import "../../shared/state-item";
 import { cardStyle } from "../../utils/card-styles";
 import { registerCustomCard } from "../../utils/custom-cards";
 import { actionHandler } from "../../utils/directives/action-handler-directive";
-import { isActive, isAvailable } from "../../utils/entity";
 import { stateIcon } from "../../utils/icons/state-icon";
 import { getLayoutFromConfig } from "../../utils/layout";
 import { FAN_CARD_EDITOR_NAME, FAN_CARD_NAME, FAN_ENTITY_DOMAINS } from "./const";
@@ -139,9 +140,12 @@ export class FanCard extends LitElement implements LovelaceCard {
             stateValue += ` - ${this.percentage}%`;
         }
 
+        const rtl = computeRTL(this.hass);
+
         return html`
-            <mushroom-card .layout=${layout}>
+            <mushroom-card .layout=${layout} ?rtl=${rtl}>
                 <mushroom-state-item
+                    ?rtl=${rtl}
                     .layout=${layout}
                     @action=${this._handleAction}
                     .actionHandler=${actionHandler({
@@ -175,7 +179,7 @@ export class FanCard extends LitElement implements LovelaceCard {
                 </mushroom-state-item>
                 ${this._config.show_percentage_control || this._config.show_oscillate_control
                     ? html`
-                          <div class="actions">
+                          <div class="actions" ?rtl=${rtl}>
                               ${this._config.show_percentage_control
                                   ? html`
                                         <mushroom-fan-percentage-control

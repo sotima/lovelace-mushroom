@@ -1,10 +1,4 @@
-import {
-    ActionConfig,
-    fireEvent,
-    HomeAssistant,
-    LocalizeFunc,
-    LovelaceCardEditor,
-} from "custom-card-helpers";
+import { fireEvent, HomeAssistant, LocalizeFunc, LovelaceCardEditor } from "custom-card-helpers";
 import { CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import memoizeOne from "memoize-one";
@@ -25,6 +19,8 @@ import { ALARM_CONTROl_PANEL_CARD_EDITOR_NAME, ALARM_CONTROl_PANEL_ENTITY_DOMAIN
 const actions: Action[] = ["more-info", "navigate", "url", "call-service", "none"];
 
 const states = ["armed_home", "armed_away", "armed_night", "armed_vacation", "armed_custom_bypass"];
+
+const ALARM_CONTROL_PANEL_FIELDS = ["show_keypad"];
 
 const computeSchema = memoizeOne((localize: LocalizeFunc, icon?: string): HaFormSchema[] => [
     { name: "entity", selector: { entity: { domain: ALARM_CONTROl_PANEL_ENTITY_DOMAINS } } },
@@ -50,6 +46,7 @@ const computeSchema = memoizeOne((localize: LocalizeFunc, icon?: string): HaForm
             localize(`ui.card.alarm_control_panel.${state.replace("armed", "arm")}`),
         ]) as [string, string][],
     },
+    { name: "show_keypad", selector: { boolean: {} } },
     { name: "tap_action", selector: { "mush-action": { actions } } },
     { name: "hold_action", selector: { "mush-action": { actions } } },
     { name: "double_tap_action", selector: { "mush-action": { actions } } },
@@ -98,7 +95,9 @@ export class SwitchCardEditor extends LitElement implements LovelaceCardEditor {
         if (GENERIC_FIELDS.includes(schema.name)) {
             return customLocalize(`editor.card.generic.${schema.name}`);
         }
-
+        if (ALARM_CONTROL_PANEL_FIELDS.includes(schema.name)) {
+            return customLocalize(`editor.card.alarm_control_panel.${schema.name}`);
+        }
         if (schema.name === "states") {
             return this.hass!.localize(
                 "ui.panel.lovelace.editor.card.alarm-panel.available_states"

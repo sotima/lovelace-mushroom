@@ -1,6 +1,6 @@
 import {
     ActionHandlerEvent,
-    computeStateDisplay,
+    computeRTL,
     handleAction,
     hasAction,
     HomeAssistant,
@@ -9,6 +9,7 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { computeStateDisplay } from "../../../ha/common/entity/compute-state-display";
 import { computeRgbColor } from "../../../utils/colors";
 import { actionHandler } from "../../../utils/directives/action-handler-directive";
 import { animation } from "../../../utils/entity-styles";
@@ -88,8 +89,11 @@ export class AlarmControlPanelChip extends LitElement implements LovelaceChip {
             this.hass
         );
 
+        const rtl = computeRTL(this.hass);
+
         return html`
             <mushroom-chip
+                ?rtl=${rtl}
                 @action=${this._handleAction}
                 .actionHandler=${actionHandler({
                     hasHold: hasAction(this._config.hold_action),

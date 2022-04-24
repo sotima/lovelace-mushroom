@@ -105,10 +105,12 @@ export const colorCss = css`
 
     /* State colors */
     --rgb-state-cover: var(--mush-rgb-state-cover, var(--rgb-blue));
+    --rgb-state-vacuum: var(--mush-rgb-state-vacuum, var(--rgb-teal));
     --rgb-state-fan: var(--mush-rgb-state-fan, var(--rgb-green));
     --rgb-state-light: var(--mush-rgb-state-light, var(--rgb-orange));
     --rgb-state-entity: var(--mush-rgb-state-entity, var(--rgb-blue));
-    --rgb-state-switch: var(--mush-rgb-state-switch, var(--rgb-blue));
+    --rgb-state-media-player: var(--mush-rgb-state-media-player, var(--rgb-indigo));
+    --rgb-state-lock: var(--mush-rgb-state-lock, var(--rgb-blue));
 
     /* State alarm colors */
     --rgb-state-alarm-disarmed: var(--mush-rgb-state-alarm-disarmed, var(--rgb-info));
@@ -120,4 +122,14 @@ export const colorCss = css`
     --rgb-state-person-not-home: var(--mush-rgb-state-person-not-home, var(--rgb-danger));
     --rgb-state-person-zone: var(--mush-rgb-state-person-zone, var(--rgb-info));
     --rgb-state-person-unknown: var(--mush-rgb-state-person-unknown, var(--rgb-grey));
+
+    /* State update colors */
+    --rgb-state-update-on: var(--mush-rgb-state-update-on, var(--rgb-orange));
+    --rgb-state-update-off: var(--mush-rgb-update-off, var(--rgb-green));
+    --rgb-state-update-installing: var(--mush-rgb-update-installing, var(--rgb-blue));
+
+    /* State lock colors */
+    --rgb-state-lock-locked: var(--mush-rgb-state-lock-locked, var(--rgb-green));
+    --rgb-state-lock-unlocked: var(--mush-rgb-state-lock-unlocked, var(--rgb-red));
+    --rgb-state-lock-pending: var(--mush-rgb-state-lock-pending, var(--rgb-orange));
 `;
